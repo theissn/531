@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f4f1" />
+    <meta name="description" content="A simple 5/3/1 lift calculator." />
+    <title>5/3/1 Lift Sheet</title>
+    <script>
+      try {
+        const savedTheme = JSON.parse(localStorage.getItem("lift-sheet-531-v1"))?.theme;
+        const theme = savedTheme === "light" || savedTheme === "dark" ? savedTheme : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.dataset.theme = theme;
+        document.querySelector('meta[name="theme-color"]').content = theme === "dark" ? "#1b201c" : "#f4f4f1";
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <span class="wordmark">5/3/1</span>
+        <nav class="main-tabs" role="tablist" aria-label="App views">
+          <button id="lifts-tab" type="button" role="tab" data-view="lifts" aria-controls="lifts-panel" aria-selected="true" class="is-active">Lifts</button>
+          <button id="settings-tab" type="button" role="tab" data-view="settings" aria-controls="settings-panel" aria-selected="false">Settings</button>
+        </nav>
+      </header>
+
+      <main>
+        <section id="lifts-panel" class="view-panel" role="tabpanel" aria-labelledby="lifts-tab">
+          <div class="week-control">
+            <label for="week-select">Week</label>
+            <select id="week-select">
+              <option value="0">1 · 5s</option>
+              <option value="1">2 · 3s</option>
+              <option value="2">3 · 5/3/1</option>
+              <option value="3">4 · Deload</option>
+            </select>
+            <span id="display-unit" class="display-unit">kg</span>
+          </div>
+          <p id="empty-hint" class="empty-hint" hidden>Add maxes in <button type="button" data-open-settings>Settings</button>.</p>
+          <div id="lift-list" class="lift-list"></div>
+        </section>
+
+        <section id="settings-panel" class="view-panel" role="tabpanel" aria-labelledby="settings-tab" hidden>
+          <div class="settings-section maxes-section">
+            <div class="section-heading">
+              <h1>Maxes (1RM)</h1>
+              <div class="unit-switch" role="group" aria-label="Weight unit">
+                <button type="button" data-unit="kg" class="is-active" aria-pressed="true">kg</button>
+                <button type="button" data-unit="lb" aria-pressed="false">lb</button>
+              </div>
+            </div>
+            <div class="max-grid">
+              <label class="max-field" for="squat-max"><span>Squat</span><span class="input-wrap"><input id="squat-max" data-lift="squat" type="text" inputmode="decimal" autocomplete="off" placeholder="0" /><span class="field-unit">kg</span></span></label>
+              <label class="max-field" for="bench-max"><span>Bench</span><span class="input-wrap"><input id="bench-max" data-lift="bench" type="text" inputmode="decimal" autocomplete="off" placeholder="0" /><span class="field-unit">kg</span></span></label>
+              <label class="max-field" for="deadlift-max"><span>Deadlift</span><span class="input-wrap"><input id="deadlift-max" data-lift="deadlift" type="text" inputmode="decimal" autocomplete="off" placeholder="0" /><span class="field-unit">kg</span></span></label>
+              <label class="max-field" for="press-max"><span>Press</span><span class="input-wrap"><input id="press-max" data-lift="press" type="text" inputmode="decimal" autocomplete="off" placeholder="0" /><span class="field-unit">kg</span></span></label>
+            </div>
+            <p id="save-status" class="save-status" role="status">Saved on this device</p>
+          </div>
+
+          <div class="settings-section training-section">
+            <div class="section-heading"><h2>Training max</h2><label class="percent-control" for="training-percent"><input id="training-percent" type="text" inputmode="decimal" autocomplete="off" aria-label="Training max as percent of one-rep max" value="90" /><span>%</span></label></div>
+          </div>
+
+          <div class="settings-section appearance-section">
+            <div class="section-heading"><h2>Theme</h2><div class="theme-switch" role="group" aria-label="Color theme">
+              <button type="button" data-theme-choice="light" aria-pressed="true" class="is-active">Light</button>
+              <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+            </div></div>
+          </div>
+
+          <details class="settings-section percentage-section">
+            <summary>Weekly percentages</summary>
+            <div class="percent-row percent-header"><span>Week</span><span>Set 1</span><span>Set 2</span><span>Set 3</span></div>
+            <div class="percent-row"><span>1 · 5s</span><span>65% × 5</span><span>75% × 5</span><span>85% × 5+</span></div>
+            <div class="percent-row"><span>2 · 3s</span><span>70% × 3</span><span>80% × 3</span><span>90% × 3+</span></div>
+            <div class="percent-row"><span>3 · 5/3/1</span><span>75% × 5</span><span>85% × 3</span><span>95% × 1+</span></div>
+            <div class="percent-row"><span>4 · Deload</span><span>40% × 5</span><span>50% × 5</span><span>60% × 5</span></div>
+          </details>
+        </section>
+      </main>
+
+    </div>
+  </body>
+</html>
