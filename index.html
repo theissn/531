@@ -72,6 +72,15 @@
             </div></div>
           </div>
 
+          <div class="settings-section backup-section">
+            <div class="section-heading"><h2>Backup</h2><div class="backup-actions">
+              <button id="export-button" type="button">Export</button>
+              <button id="import-button" type="button">Import</button>
+              <input id="import-file" type="file" accept=".json,application/json" hidden />
+            </div></div>
+            <p id="backup-status" class="backup-status" role="status" hidden></p>
+          </div>
+
           <details class="settings-section percentage-section">
             <summary>Weekly percentages</summary>
             <div class="percent-row percent-header"><span>Week</span><span>Set 1</span><span>Set 2</span><span>Set 3</span></div>

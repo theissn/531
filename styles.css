@@ -78,6 +78,11 @@ h1, h2 { font-size: 17px; font-weight: 700; letter-spacing: -.02em; margin-botto
 .percent-control input { width: 44px; border: 0; outline: 0; background: transparent; color: var(--text); text-align: right; font-size: 17px; font-weight: 700; }
 .percent-control input[aria-invalid="true"] { color: #d64c3c; }
 .percent-control span { color: var(--muted); font-size: 12px; margin-left: 4px; }
+.backup-actions { display: flex; gap: 8px; }
+.backup-actions button { min-width: 64px; height: 34px; padding: 0 10px; border: 1px solid var(--line); background: var(--field); color: var(--text); font-size: 12px; font-weight: 700; }
+.backup-actions button:hover { border-color: var(--text); }
+.backup-status { color: var(--muted); font-size: 12px; margin: 0 0 12px; }
+.backup-status[data-error="true"] { color: #d64c3c; }
 .percent-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; border-top: 1px solid var(--line); padding: 13px 0; font-size: 12px; font-variant-numeric: tabular-nums; }
 .percent-row span:first-child { font-weight: 700; }
 .percent-header { border-top: 0; padding-top: 0; padding-bottom: 8px; color: var(--muted); font-size: 11px; }
@@ -88,7 +93,8 @@ h1, h2 { font-size: 17px; font-weight: 700; letter-spacing: -.02em; margin-botto
 .percentage-section summary::after { content: "+"; color: var(--muted); font-size: 20px; font-weight: 400; }
 .percentage-section[open] summary::after { content: "−"; }
 .main-tabs button:focus-visible, .unit-switch button:focus-visible, .theme-switch button:focus-visible,
-.week-control select:focus-visible, .empty-hint button:focus-visible, .percentage-section summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.week-control select:focus-visible, .empty-hint button:focus-visible, .percentage-section summary:focus-visible,
+.backup-actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 @media (max-width: 700px) {
   .max-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 16px; }

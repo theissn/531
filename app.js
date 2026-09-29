@@ -1,4 +1,5 @@
 const STORAGE_KEY = "lift-sheet-531-v1";
+const BACKUP_FORMAT = "531-lift-sheet";
 const KG_PER_LB = 0.45359237;
 const LIFTS = [
   { id: "squat", name: "Squat" },
@@ -46,6 +47,8 @@ const viewButtons = [...document.querySelectorAll("[data-view]")];
 const liftList = document.getElementById("lift-list");
 const saveStatus = document.getElementById("save-status");
 const percentInput = document.getElementById("training-percent");
+const backupStatus = document.getElementById("backup-status");
+const importFile = document.getElementById("import-file");
 
 function inCurrentUnit(kg) { return state.unit === "kg" ? kg : kg / KG_PER_LB; }
 function inKg(value) { return state.unit === "kg" ? value : value * KG_PER_LB; }
@@ -63,6 +66,39 @@ function save() {
   } catch {
     saveStatus.textContent = "Local saving unavailable";
   }
+}
+
+function backupData() {
+  return {
+    format: BACKUP_FORMAT,
+    version: 1,
+    unit: state.unit,
+    maxesKg: { ...state.maxesKg },
+    trainingMaxPercent: state.trainingMaxPercent,
+    theme: state.theme,
+  };
+}
+
+function parseBackup(data) {
+  if (!data || typeof data !== "object" || Array.isArray(data) || data.format !== BACKUP_FORMAT || data.version !== 1) throw new Error("Invalid backup");
+  if (data.unit !== "kg" && data.unit !== "lb") throw new Error("Invalid unit");
+  if (data.theme !== "light" && data.theme !== "dark") throw new Error("Invalid theme");
+  if (!Number.isFinite(data.trainingMaxPercent) || data.trainingMaxPercent <= 0 || data.trainingMaxPercent > 100) throw new Error("Invalid training max");
+  if (!data.maxesKg || typeof data.maxesKg !== "object" || Array.isArray(data.maxesKg)) throw new Error("Invalid maxes");
+  const maxesKg = {};
+  for (const lift of LIFTS) {
+    if (!Object.hasOwn(data.maxesKg, lift.id)) continue;
+    const value = data.maxesKg[lift.id];
+    if (!Number.isFinite(value) || value <= 0) throw new Error("Invalid max");
+    maxesKg[lift.id] = value;
+  }
+  return { unit: data.unit, maxesKg, trainingMaxPercent: data.trainingMaxPercent, theme: data.theme };
+}
+
+function setBackupStatus(message, error = false) {
+  backupStatus.textContent = message;
+  backupStatus.dataset.error = String(error);
+  backupStatus.hidden = false;
 }
 
 function setView(view) {
@@ -172,6 +208,44 @@ themeButtons.forEach((button) => button.addEventListener("click", () => {
   renderTheme();
   save();
 }));
+
+document.getElementById("export-button").addEventListener("click", () => {
+  try {
+    const blob = new Blob([JSON.stringify(backupData(), null, 2) + "\n"], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `531-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setBackupStatus("Backup downloaded.");
+  } catch {
+    setBackupStatus("Could not export backup.", true);
+  }
+});
+
+document.getElementById("import-button").addEventListener("click", () => importFile.click());
+importFile.addEventListener("change", async () => {
+  const file = importFile.files?.[0];
+  if (!file) return;
+  try {
+    if (file.size > 100_000) throw new Error("File too large");
+    const imported = parseBackup(JSON.parse(await file.text()));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(imported));
+    Object.assign(state, imported);
+    renderSettings();
+    renderTheme();
+    renderResults();
+    saveStatus.textContent = "Saved on this device";
+    setBackupStatus("Backup imported.");
+  } catch {
+    setBackupStatus("Could not import this backup.", true);
+  } finally {
+    importFile.value = "";
+  }
+});
 
 renderSettings();
 renderTheme();
