@@ -43,9 +43,12 @@ h1, h2, p { margin-top: 0; }
 h1, h2 { font-size: 17px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 0; }
 .section-heading { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 
-.week-control { display: flex; align-items: center; gap: 12px; padding: 2px 0 17px; border-bottom: 1px solid var(--text); }
-.week-control label { font-size: 14px; font-weight: 700; }
-.week-control select { width: 150px; height: 36px; padding: 0 9px; border: 1px solid var(--line); border-radius: 0; background: var(--field); color: var(--text); font-size: 13px; }
+.week-control { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--text); }
+.week-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); flex: 1; min-width: 0; }
+.week-tabs button { min-height: 56px; border: 0; border-bottom: 2px solid transparent; padding: 8px 4px 10px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 700; }
+.week-tabs button.is-active { border-bottom-color: var(--accent); color: var(--text); }
+.week-tabs button:hover { color: var(--text); }
+.week-detail { display: block; margin-top: 4px; font-size: 11px; font-weight: 400; color: var(--muted); }
 .display-unit { color: var(--muted); font-size: 12px; font-weight: 700; margin-left: auto; }
 .empty-hint { color: var(--muted); font-size: 12px; margin: 12px 0 0; }
 .empty-hint button { border: 0; padding: 0; background: transparent; color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
@@ -83,6 +86,11 @@ h1, h2 { font-size: 17px; font-weight: 700; letter-spacing: -.02em; margin-botto
 .backup-actions button:hover { border-color: var(--text); }
 .backup-status { color: var(--muted); font-size: 12px; margin: 0 0 12px; }
 .backup-status[data-error="true"] { color: #d64c3c; }
+.app-action { min-width: 64px; height: 34px; padding: 0 10px; border: 1px solid var(--line); background: var(--field); color: var(--text); font-size: 12px; font-weight: 700; }
+.app-action:hover { border-color: var(--text); }
+.app-action:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app-action:disabled { cursor: wait; opacity: .6; }
+.app-help { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0 0 16px; }
 .percent-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; border-top: 1px solid var(--line); padding: 13px 0; font-size: 12px; font-variant-numeric: tabular-nums; }
 .percent-row span:first-child { font-weight: 700; }
 .percent-header { border-top: 0; padding-top: 0; padding-bottom: 8px; color: var(--muted); font-size: 11px; }
@@ -93,7 +101,7 @@ h1, h2 { font-size: 17px; font-weight: 700; letter-spacing: -.02em; margin-botto
 .percentage-section summary::after { content: "+"; color: var(--muted); font-size: 20px; font-weight: 400; }
 .percentage-section[open] summary::after { content: "−"; }
 .main-tabs button:focus-visible, .unit-switch button:focus-visible, .theme-switch button:focus-visible,
-.week-control select:focus-visible, .empty-hint button:focus-visible, .percentage-section summary:focus-visible,
+.week-tabs button:focus-visible, #week-panel:focus-visible, .empty-hint button:focus-visible, .percentage-section summary:focus-visible,
 .backup-actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 @media (max-width: 700px) {

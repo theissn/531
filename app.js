@@ -16,6 +16,8 @@ const WEEKS = [
 
 const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 
+function isValidWeek(value) { return Number.isInteger(value) && value >= 0 && value < WEEKS.length; }
+
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -30,18 +32,18 @@ function loadState() {
       maxesKg,
       trainingMaxPercent: Number.isFinite(saved.trainingMaxPercent) && saved.trainingMaxPercent > 0 && saved.trainingMaxPercent <= 100 ? saved.trainingMaxPercent : 90,
       theme: saved.theme === "light" || saved.theme === "dark" ? saved.theme : systemTheme,
+      activeWeek: isValidWeek(saved.activeWeek) ? saved.activeWeek : 0,
     };
   } catch {
     return null;
   }
 }
 
-const state = loadState() ?? { unit: "kg", maxesKg: {}, trainingMaxPercent: 90, theme: systemTheme };
-let activeWeek = 0;
+const state = loadState() ?? { unit: "kg", maxesKg: {}, trainingMaxPercent: 90, theme: systemTheme, activeWeek: 0 };
 
 const inputs = [...document.querySelectorAll("[data-lift]")];
 const unitButtons = [...document.querySelectorAll("[data-unit]")];
-const weekSelect = document.getElementById("week-select");
+const weekButtons = [...document.querySelectorAll("[data-week]")];
 const themeButtons = [...document.querySelectorAll("[data-theme-choice]")];
 const viewButtons = [...document.querySelectorAll("[data-view]")];
 const liftList = document.getElementById("lift-list");
@@ -76,6 +78,7 @@ function backupData() {
     maxesKg: { ...state.maxesKg },
     trainingMaxPercent: state.trainingMaxPercent,
     theme: state.theme,
+    activeWeek: state.activeWeek,
   };
 }
 
@@ -83,6 +86,7 @@ function parseBackup(data) {
   if (!data || typeof data !== "object" || Array.isArray(data) || data.format !== BACKUP_FORMAT || data.version !== 1) throw new Error("Invalid backup");
   if (data.unit !== "kg" && data.unit !== "lb") throw new Error("Invalid unit");
   if (data.theme !== "light" && data.theme !== "dark") throw new Error("Invalid theme");
+  if (Object.hasOwn(data, "activeWeek") && !isValidWeek(data.activeWeek)) throw new Error("Invalid week");
   if (!Number.isFinite(data.trainingMaxPercent) || data.trainingMaxPercent <= 0 || data.trainingMaxPercent > 100) throw new Error("Invalid training max");
   if (!data.maxesKg || typeof data.maxesKg !== "object" || Array.isArray(data.maxesKg)) throw new Error("Invalid maxes");
   const maxesKg = {};
@@ -92,7 +96,7 @@ function parseBackup(data) {
     if (!Number.isFinite(value) || value <= 0) throw new Error("Invalid max");
     maxesKg[lift.id] = value;
   }
-  return { unit: data.unit, maxesKg, trainingMaxPercent: data.trainingMaxPercent, theme: data.theme };
+  return { unit: data.unit, maxesKg, trainingMaxPercent: data.trainingMaxPercent, theme: data.theme, activeWeek: data.activeWeek ?? state.activeWeek };
 }
 
 function setBackupStatus(message, error = false) {
@@ -137,13 +141,19 @@ function renderTheme() {
 }
 
 function renderResults() {
-  weekSelect.value = String(activeWeek);
+  weekButtons.forEach((button) => {
+    const selected = Number(button.dataset.week) === state.activeWeek;
+    button.classList.toggle("is-active", selected);
+    button.setAttribute("aria-selected", String(selected));
+    button.tabIndex = selected ? 0 : -1;
+    if (selected) document.getElementById("week-panel").setAttribute("aria-labelledby", button.id);
+  });
   document.getElementById("empty-hint").hidden = Object.keys(state.maxesKg).length > 0;
 
   liftList.innerHTML = LIFTS.map((lift) => {
     const maxKg = state.maxesKg[lift.id];
     const tmKg = maxKg ? maxKg * state.trainingMaxPercent / 100 : null;
-    const sets = WEEKS[activeWeek].map(([percent, reps]) => {
+    const sets = WEEKS[state.activeWeek].map(([percent, reps]) => {
       const weight = tmKg ? format(workingWeight(tmKg * percent / 100)) : "—";
       return `<div class="set-cell"><span class="set-weight">${weight}</span><span class="set-meta">×${reps}</span></div>`;
     }).join("");
@@ -198,9 +208,26 @@ percentInput.addEventListener("blur", () => {
   percentInput.removeAttribute("aria-invalid");
 });
 
-weekSelect.addEventListener("change", () => {
-  activeWeek = Number(weekSelect.value);
+function setWeek(week) {
+  state.activeWeek = week;
   renderResults();
+  save();
+}
+
+weekButtons.forEach((button, index) => {
+  button.addEventListener("click", () => setWeek(Number(button.dataset.week)));
+  button.addEventListener("keydown", (event) => {
+    let nextIndex;
+    if (event.key === "ArrowLeft") nextIndex = (index + weekButtons.length - 1) % weekButtons.length;
+    else if (event.key === "ArrowRight") nextIndex = (index + 1) % weekButtons.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = weekButtons.length - 1;
+    else return;
+    event.preventDefault();
+    const next = weekButtons[nextIndex];
+    next.focus();
+    setWeek(Number(next.dataset.week));
+  });
 });
 
 themeButtons.forEach((button) => button.addEventListener("click", () => {

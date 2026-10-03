@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f4f4f1" />
     <meta name="description" content="A simple 5/3/1 lift calculator." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="5/3/1" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <title>5/3/1 Lift Sheet</title>
     <script>
       try {
@@ -16,6 +21,7 @@
     </script>
     <link rel="stylesheet" href="./styles.css" />
     <script src="./app.js" defer></script>
+    <script src="./pwa.js" defer></script>
   </head>
   <body>
     <div class="page">
@@ -30,17 +36,18 @@
       <main>
         <section id="lifts-panel" class="view-panel" role="tabpanel" aria-labelledby="lifts-tab">
           <div class="week-control">
-            <label for="week-select">Week</label>
-            <select id="week-select">
-              <option value="0">1 · 5s</option>
-              <option value="1">2 · 3s</option>
-              <option value="2">3 · 5/3/1</option>
-              <option value="3">4 · Deload</option>
-            </select>
+            <div class="week-tabs" role="tablist" aria-label="Training week">
+              <button id="week-1-tab" type="button" role="tab" data-week="0" aria-controls="week-panel" aria-selected="true" tabindex="0" class="is-active"><span>Week 1</span><span class="week-detail">5s</span></button>
+              <button id="week-2-tab" type="button" role="tab" data-week="1" aria-controls="week-panel" aria-selected="false" tabindex="-1"><span>Week 2</span><span class="week-detail">3s</span></button>
+              <button id="week-3-tab" type="button" role="tab" data-week="2" aria-controls="week-panel" aria-selected="false" tabindex="-1"><span>Week 3</span><span class="week-detail">5/3/1</span></button>
+              <button id="week-4-tab" type="button" role="tab" data-week="3" aria-controls="week-panel" aria-selected="false" tabindex="-1"><span>Week 4</span><span class="week-detail">Deload</span></button>
+            </div>
             <span id="display-unit" class="display-unit">kg</span>
           </div>
-          <p id="empty-hint" class="empty-hint" hidden>Add maxes in <button type="button" data-open-settings>Settings</button>.</p>
-          <div id="lift-list" class="lift-list"></div>
+          <div id="week-panel" role="tabpanel" aria-labelledby="week-1-tab" tabindex="0">
+            <p id="empty-hint" class="empty-hint" hidden>Add maxes in <button type="button" data-open-settings>Settings</button>.</p>
+            <div id="lift-list" class="lift-list"></div>
+          </div>
         </section>
 
         <section id="settings-panel" class="view-panel" role="tabpanel" aria-labelledby="settings-tab" hidden>
@@ -79,6 +86,16 @@
               <input id="import-file" type="file" accept=".json,application/json" hidden />
             </div></div>
             <p id="backup-status" class="backup-status" role="status" hidden></p>
+          </div>
+
+          <div id="install-section" class="settings-section" hidden>
+            <div class="section-heading"><h2>Install app</h2><button id="install-button" class="app-action" type="button" hidden>Install</button></div>
+            <p id="install-help" class="app-help"></p>
+          </div>
+
+          <div id="update-section" class="settings-section" hidden>
+            <div class="section-heading"><h2>Update available</h2><button id="update-button" class="app-action" type="button">Update</button></div>
+            <p id="update-status" class="app-help" role="status">Reload to use the latest version. Your saved maxes will stay on this device.</p>
           </div>
 
           <details class="settings-section percentage-section">
