@@ -16,6 +16,8 @@ In supported browsers, open Settings and select Install, or use the browser's in
 
 Saved maxes, theme, training settings, and the last selected week remain in local storage. Choose a week using the tabs; the app restores it when reopened. Use Export in Settings to back up your settings, including the selected week. Older backups still import correctly.
 
+In Settings, expand **Estimate 1RM** and enter a weight and 1–10 reps. The calculator uses the Epley formula (`weight × (1 + reps / 30)`); a single rep uses the entered weight. Choose a lift and select **Use as max** to save the estimate as its 1RM and update the lift sheet. It follows the selected kg/lb unit; calculator inputs are temporary and do not change saved maxes until applied.
+
 ## Deploy and update
 
 Serve this whole directory over HTTPS, including `sw.js`, the manifest, and `icons/`. Relative URLs support deployment at the domain root or in a subdirectory (with a trailing slash). Serve `sw.js` with a JavaScript MIME type and revalidation (`Cache-Control: no-cache`), and avoid long-lived HTTP caching for the app files and manifest.

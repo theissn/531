@@ -51,6 +51,12 @@ const saveStatus = document.getElementById("save-status");
 const percentInput = document.getElementById("training-percent");
 const backupStatus = document.getElementById("backup-status");
 const importFile = document.getElementById("import-file");
+const estimateWeight = document.getElementById("estimate-weight");
+const estimateReps = document.getElementById("estimate-reps");
+const estimateLift = document.getElementById("estimate-lift");
+const useEstimate = document.getElementById("use-estimate");
+const estimateStatus = document.getElementById("estimate-status");
+let calculatorUnit = state.unit;
 
 function inCurrentUnit(kg) { return state.unit === "kg" ? kg : kg / KG_PER_LB; }
 function inKg(value) { return state.unit === "kg" ? value : value * KG_PER_LB; }
@@ -128,7 +134,50 @@ function renderSettings() {
   });
   percentInput.value = format(state.trainingMaxPercent);
   document.getElementById("display-unit").textContent = state.unit;
+  renderCalculator();
 }
+
+function estimatedMax() {
+  const weight = Number(estimateWeight.value.trim().replace(",", "."));
+  const reps = Number(estimateReps.value.trim());
+  if (!Number.isFinite(weight) || weight <= 0 || !Number.isInteger(reps) || reps < 1 || reps > 10) return null;
+  const max = Math.round((reps === 1 ? weight : weight * (1 + reps / 30)) * 10) / 10;
+  return Number.isFinite(max) && max > 0 ? max : null;
+}
+
+function renderCalculator() {
+  const rawWeight = estimateWeight.value.trim().replace(",", ".");
+  const weight = Number(rawWeight);
+  if (calculatorUnit !== state.unit) {
+    if (Number.isFinite(weight) && weight > 0) {
+      estimateWeight.value = displayMax(calculatorUnit === "kg" ? weight : weight * KG_PER_LB);
+    }
+    calculatorUnit = state.unit;
+  }
+  const rawReps = estimateReps.value.trim();
+  const reps = Number(rawReps);
+  estimateWeight.setAttribute("aria-invalid", String(rawWeight !== "" && (!Number.isFinite(weight) || weight <= 0)));
+  estimateReps.setAttribute("aria-invalid", String(rawReps !== "" && (!Number.isInteger(reps) || reps < 1 || reps > 10)));
+  const max = estimatedMax();
+  document.getElementById("estimate-result").textContent = max === null ? "—" : `${format(max)} ${state.unit}`;
+  useEstimate.disabled = max === null;
+  estimateStatus.hidden = true;
+}
+
+[estimateWeight, estimateReps].forEach((input) => input.addEventListener("input", renderCalculator));
+estimateLift.addEventListener("change", () => { estimateStatus.hidden = true; });
+useEstimate.addEventListener("click", () => {
+  const max = estimatedMax();
+  if (max === null) return;
+  const lift = LIFTS.find((lift) => lift.id === estimateLift.value);
+  if (!lift) return;
+  state.maxesKg[lift.id] = inKg(max);
+  renderSettings();
+  renderResults();
+  save();
+  estimateStatus.textContent = `Used ${format(max)} ${state.unit} as ${lift.name} max.`;
+  estimateStatus.hidden = false;
+});
 
 function renderTheme() {
   document.documentElement.dataset.theme = state.theme;

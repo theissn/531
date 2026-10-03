@@ -1,7 +1,7 @@
 // Bump this version whenever the app shell or icons change.
 const APP_ROOT = new URL("./", self.location.href);
 const CACHE_PREFIX = `lift-sheet-531-${APP_ROOT.pathname}-shell-`;
-const CACHE_NAME = `${CACHE_PREFIX}v4`;
+const CACHE_NAME = `${CACHE_PREFIX}v5`;
 const SHELL_URLS = [
   "./", "./index.html", "./styles.css", "./app.js", "./pwa.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png",

@@ -68,6 +68,26 @@
             <p id="save-status" class="save-status" role="status">Saved on this device</p>
           </div>
 
+          <details class="settings-section calculator-section">
+            <summary>Estimate 1RM</summary>
+            <p id="estimate-help" class="app-help">Enter a set of 1–10 reps. Uses the Epley estimate.</p>
+            <div class="estimate-grid">
+              <label class="max-field" for="estimate-weight"><span>Weight lifted</span><span class="input-wrap"><input id="estimate-weight" type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby="estimate-help" /><span class="field-unit">kg</span></span></label>
+              <label class="max-field" for="estimate-reps"><span>Reps</span><span class="input-wrap"><input id="estimate-reps" type="text" inputmode="numeric" autocomplete="off" placeholder="5" aria-describedby="estimate-help" /></span></label>
+            </div>
+            <p class="estimate-result" role="status">Estimated 1RM <strong id="estimate-result">—</strong></p>
+            <div class="estimate-actions">
+              <select id="estimate-lift" aria-label="Lift to use estimated max for">
+                <option value="squat">Squat</option>
+                <option value="bench">Bench</option>
+                <option value="deadlift">Deadlift</option>
+                <option value="press">Press</option>
+              </select>
+              <button id="use-estimate" class="app-action" type="button" disabled>Use as max</button>
+            </div>
+            <p id="estimate-status" class="backup-status" role="status" hidden></p>
+          </details>
+
           <div class="settings-section training-section">
             <div class="section-heading"><h2>Training max</h2><label class="percent-control" for="training-percent"><input id="training-percent" type="text" inputmode="decimal" autocomplete="off" aria-label="Training max as percent of one-rep max" value="90" /><span>%</span></label></div>
           </div>
