@@ -41,7 +41,7 @@ function loadState() {
 
 const state = loadState() ?? { unit: "kg", maxesKg: {}, trainingMaxPercent: 90, theme: systemTheme, activeWeek: 0 };
 
-const inputs = [...document.querySelectorAll("[data-lift]")];
+const maxTriggers = [...document.querySelectorAll("[data-lift]")];
 const unitButtons = [...document.querySelectorAll("[data-unit]")];
 const weekButtons = [...document.querySelectorAll("[data-week]")];
 const themeButtons = [...document.querySelectorAll("[data-theme-choice]")];
@@ -56,6 +56,13 @@ const estimateReps = document.getElementById("estimate-reps");
 const estimateLift = document.getElementById("estimate-lift");
 const useEstimate = document.getElementById("use-estimate");
 const estimateStatus = document.getElementById("estimate-status");
+const maxDialog = document.getElementById("max-dialog");
+const maxDialogTitle = document.getElementById("max-dialog-title");
+const maxDialogHelp = document.getElementById("max-dialog-help");
+const maxDialogInput = document.getElementById("max-dialog-input");
+const maxDialogUnit = document.getElementById("max-dialog-unit");
+const maxStepButtons = [...maxDialog.querySelectorAll("[data-step]")];
+let dialogLift = null;
 let calculatorUnit = state.unit;
 
 function inCurrentUnit(kg) { return state.unit === "kg" ? kg : kg / KG_PER_LB; }
@@ -121,10 +128,13 @@ function setView(view) {
 }
 
 function renderSettings() {
-  for (const input of inputs) {
-    const kg = state.maxesKg[input.dataset.lift];
-    input.value = kg ? displayMax(kg) : "";
-    input.removeAttribute("aria-invalid");
+  for (const trigger of maxTriggers) {
+    const lift = LIFTS.find((item) => item.id === trigger.dataset.lift);
+    const kg = state.maxesKg[trigger.dataset.lift];
+    const value = trigger.querySelector(".max-value");
+    value.textContent = kg ? displayMax(kg) : "0";
+    value.classList.toggle("is-empty", !kg);
+    trigger.setAttribute("aria-label", `${lift.name} max${kg ? `: ${displayMax(kg)} ${state.unit}` : ", not set"}`);
   }
   document.querySelectorAll(".field-unit").forEach((el) => { el.textContent = state.unit; });
   unitButtons.forEach((button) => {
@@ -223,16 +233,65 @@ viewButtons.forEach((button, index) => {
 });
 document.querySelector("[data-open-settings]").addEventListener("click", () => setView("settings"));
 
-inputs.forEach((input) => input.addEventListener("input", () => {
-  const raw = input.value.trim().replace(",", ".");
-  const value = Number(raw);
-  const valid = raw !== "" && Number.isFinite(value) && value > 0;
-  if (valid) state.maxesKg[input.dataset.lift] = inKg(value);
-  else delete state.maxesKg[input.dataset.lift];
-  input.setAttribute("aria-invalid", String(raw !== "" && !valid));
-  save();
-  renderResults();
+function maxStep() { return state.unit === "kg" ? 2.5 : 5; }
+
+function parseDisplayMax(raw) {
+  const value = Number(String(raw).trim().replace(",", "."));
+  return Number.isFinite(value) && value > 0 ? Math.round(value * 10) / 10 : null;
+}
+
+function openMaxDialog(lift) {
+  dialogLift = lift;
+  maxDialogTitle.textContent = `${lift.name} max`;
+  maxDialogHelp.textContent = `Adjust with − and + in ${format(maxStep())} ${state.unit} steps, or type an exact value.`;
+  maxDialogUnit.textContent = state.unit;
+  const kg = state.maxesKg[lift.id];
+  maxDialogInput.value = kg ? displayMax(kg) : "";
+  maxDialogInput.removeAttribute("aria-invalid");
+  maxDialog.showModal();
+  maxDialogInput.focus();
+  maxDialogInput.select();
+}
+
+maxTriggers.forEach((trigger) => trigger.addEventListener("click", () => {
+  const lift = LIFTS.find((item) => item.id === trigger.dataset.lift);
+  if (lift) openMaxDialog(lift);
 }));
+
+maxStepButtons.forEach((button) => button.addEventListener("click", () => {
+  const current = parseDisplayMax(maxDialogInput.value) ?? 0;
+  const next = Math.max(0, Math.round((current + Number(button.dataset.step) * maxStep()) * 10) / 10);
+  maxDialogInput.value = next === 0 ? "" : format(next);
+  maxDialogInput.removeAttribute("aria-invalid");
+}));
+
+maxDialogInput.addEventListener("input", () => {
+  const raw = maxDialogInput.value.trim();
+  maxDialogInput.setAttribute("aria-invalid", String(raw !== "" && parseDisplayMax(raw) === null));
+});
+
+maxDialog.querySelector("[data-dialog-cancel]").addEventListener("click", () => maxDialog.close());
+
+maxDialog.querySelector("[data-dialog-done]").addEventListener("click", () => {
+  const raw = maxDialogInput.value.trim();
+  if (raw === "") {
+    delete state.maxesKg[dialogLift.id];
+  } else {
+    const value = parseDisplayMax(raw);
+    if (value === null) {
+      maxDialogInput.setAttribute("aria-invalid", "true");
+      maxDialogInput.focus();
+      return;
+    }
+    state.maxesKg[dialogLift.id] = inKg(value);
+  }
+  renderSettings();
+  renderResults();
+  save();
+  maxDialog.close();
+});
+
+maxDialog.addEventListener("close", () => { dialogLift = null; });
 
 unitButtons.forEach((button) => button.addEventListener("click", () => {
   if (state.unit === button.dataset.unit) return;
